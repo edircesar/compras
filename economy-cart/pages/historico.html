@@ -27,6 +27,15 @@
     <p style="font-size: 0.8rem; opacity: 0.8;">Gerencie suas listas de compras locais de forma 100% offline.</p>
   </div>
 
+  <!-- Banner de Status de Conexão -->
+  <div id="banner-status-conexao" class="banner-status" style="display: none;"></div>
+
+  <!-- Indicador de sincronização inicial -->
+  <div id="sync-loading-indicator" style="display: none; text-align: center; padding: 16px; margin-bottom: 12px;">
+    <div class="sync-spinner"></div>
+    <p style="font-size: 0.85rem; color: var(--color-primary); margin-top: 8px; font-weight: 600;">Sincronizando com a nuvem...</p>
+  </div>
+
   <h3 style="font-size: 0.95rem; margin-bottom: 12px; color: var(--color-primary-dark); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Listas Recentes</h3>
 
   <!-- Container onde as compras salvas no IndexedDB serão renderizadas -->

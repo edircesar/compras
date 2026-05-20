@@ -1,4 +1,4 @@
-const CACHE_NAME = 'economia-inteligente-v5';
+const CACHE_NAME = 'economia-inteligente-v6';
 const STATIC_ASSETS = [
   './',
   './index.html',

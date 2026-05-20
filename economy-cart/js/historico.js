@@ -3,6 +3,8 @@
 
 /**
  * Inicializador da tela de Histórico.
+ * Quando online: sincroniza ANTES de renderizar para garantir dados atualizados.
+ * Quando offline: renderiza dados locais e exibe banner informativo.
  */
 async function initHistoricoScreen() {
   const user = Auth.getUser();
@@ -30,27 +32,139 @@ async function initHistoricoScreen() {
     };
   }
 
-  // 2. Renderiza a lista de compras históricas salvas
+  // 2. Verifica estado da conexão e sincroniza ANTES de renderizar
+  const loadingIndicator = document.getElementById('sync-loading-indicator');
+
+  if (navigator.onLine) {
+    // --- MODO ONLINE: Sincroniza antes de mostrar os dados ---
+    if (loadingIndicator) loadingIndicator.style.display = 'block';
+
+    try {
+      await SyncManager.syncPurchases(false);
+      atualizarBannerStatus('online');
+    } catch (err) {
+      console.error('[Historico] Erro na sincronização inicial:', err);
+      atualizarBannerStatus('erro');
+    } finally {
+      if (loadingIndicator) loadingIndicator.style.display = 'none';
+    }
+  } else {
+    // --- MODO OFFLINE: Mostra banner informativo ---
+    atualizarBannerStatus('offline');
+  }
+
+  // 3. Renderiza a lista de compras após a sincronização (ou direto se offline)
   await renderizarHistorico();
 
-  // 3. Configura ouvinte do botão de sincronização manual
+  // 4. Configura ouvinte do botão de sincronização manual
   const btnSync = document.getElementById('btn-manual-sync');
   if (btnSync) {
     btnSync.onclick = async () => {
       const originalText = btnSync.innerText;
       btnSync.disabled = true;
       btnSync.innerText = 'Sincronizando...';
+      atualizarBannerStatus('sincronizando');
       
       try {
         await SyncManager.syncPurchases(true);
+        atualizarBannerStatus('online');
         await renderizarHistorico();
       } catch (err) {
         console.error(err);
+        atualizarBannerStatus('erro');
       } finally {
         btnSync.disabled = false;
         btnSync.innerText = originalText;
       }
     };
+  }
+
+  // 5. Ouvir mudanças de estado de rede em tempo real para atualizar o banner
+  window.addEventListener('online', () => {
+    atualizarBannerStatus('online');
+  });
+  window.addEventListener('offline', () => {
+    atualizarBannerStatus('offline');
+  });
+}
+
+/**
+ * Atualiza o banner de status de conexão na tela de histórico.
+ * @param {'online'|'offline'|'sincronizando'|'erro'} status
+ */
+function atualizarBannerStatus(status) {
+  const banner = document.getElementById('banner-status-conexao');
+  if (!banner) return;
+
+  banner.style.display = 'flex';
+
+  const ultimaSync = localStorage.getItem('pwa_ultima_sync_data');
+  const textoUltimaSync = ultimaSync
+    ? `Última sincronização: ${formatarDataHoraBanner(ultimaSync)}`
+    : 'Nenhuma sincronização registrada neste dispositivo.';
+
+  switch (status) {
+    case 'online':
+      // Registra a data/hora da sincronização bem-sucedida
+      localStorage.setItem('pwa_ultima_sync_data', new Date().toISOString());
+      banner.className = 'banner-status banner-online';
+      banner.innerHTML = `
+        <span class="banner-status-icon">✅</span>
+        <div class="banner-status-text">
+          Dados atualizados com a nuvem.
+          <span class="banner-status-time">Atualizado agora</span>
+        </div>
+      `;
+      break;
+
+    case 'offline':
+      banner.className = 'banner-status banner-offline';
+      banner.innerHTML = `
+        <span class="banner-status-icon">📡</span>
+        <div class="banner-status-text">
+          Você está sem internet. Os dados abaixo podem estar desatualizados.
+          <span class="banner-status-time">${textoUltimaSync}</span>
+        </div>
+      `;
+      break;
+
+    case 'sincronizando':
+      banner.className = 'banner-status banner-syncing';
+      banner.innerHTML = `
+        <span class="banner-status-icon">🔄</span>
+        <div class="banner-status-text">
+          Sincronizando com o servidor...
+        </div>
+      `;
+      break;
+
+    case 'erro':
+      banner.className = 'banner-status banner-offline';
+      banner.innerHTML = `
+        <span class="banner-status-icon">⚠️</span>
+        <div class="banner-status-text">
+          Não foi possível sincronizar. Exibindo dados locais salvos.
+          <span class="banner-status-time">${textoUltimaSync}</span>
+        </div>
+      `;
+      break;
+  }
+}
+
+/**
+ * Formata uma string ISO em data/hora legível no padrão brasileiro.
+ */
+function formatarDataHoraBanner(isoString) {
+  try {
+    const d = new Date(isoString);
+    const dia = String(d.getDate()).padStart(2, '0');
+    const mes = String(d.getMonth() + 1).padStart(2, '0');
+    const ano = d.getFullYear();
+    const hora = String(d.getHours()).padStart(2, '0');
+    const min = String(d.getMinutes()).padStart(2, '0');
+    return `${dia}/${mes}/${ano} às ${hora}:${min}`;
+  } catch {
+    return isoString;
   }
 }
 
@@ -146,10 +260,27 @@ async function renderizarHistorico() {
         const compraId = btn.getAttribute('data-id');
         const localNome = btn.getAttribute('data-local');
 
-        if (confirm(`Tem certeza de que deseja deletar a lista de compras do "${localNome}"? Esta ação removerá a lista e todos os seus itens localmente.`)) {
+        if (confirm(`Tem certeza de que deseja deletar a lista de compras do "${localNome}"? Esta ação removerá a lista e todos os seus itens.`)) {
           try {
             await excluirCompra(compraId);
-            showToast('Lista excluída do dispositivo.', 'info');
+
+            // Se estiver online, tenta deletar imediatamente no servidor
+            if (navigator.onLine) {
+              try {
+                await fetch(`./api/compras.php?id_local=${compraId}`, {
+                  method: 'DELETE',
+                  headers: Auth.getHeaders()
+                });
+                await removerExclusaoLocal(compraId);
+                showToast('Lista excluída do dispositivo e da nuvem.', 'success');
+              } catch (errDel) {
+                console.warn('[Historico] Exclusão remota falhou, será sincronizada depois.', errDel);
+                showToast('Lista excluída localmente. Será removida da nuvem na próxima sincronização.', 'info');
+              }
+            } else {
+              showToast('Lista excluída localmente. Será removida da nuvem quando você estiver online.', 'info');
+            }
+
             await renderizarHistorico();
           } catch (err) {
             console.error(err);

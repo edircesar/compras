@@ -801,3 +801,74 @@ h2 {
   }
 }
 
+/* ==========================================
+   BANNER DE STATUS DE CONEXÃO
+   ========================================== */
+.banner-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 14px;
+  animation: fadeInBanner 0.3s ease;
+}
+
+.banner-status.banner-online {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #a5d6a7;
+}
+
+.banner-status.banner-offline {
+  background-color: #fff3e0;
+  color: #e65100;
+  border: 1px solid #ffcc80;
+}
+
+.banner-status.banner-syncing {
+  background-color: #e3f2fd;
+  color: #1565c0;
+  border: 1px solid #90caf9;
+}
+
+.banner-status-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.banner-status-text {
+  flex: 1;
+  line-height: 1.4;
+}
+
+.banner-status-time {
+  font-size: 0.7rem;
+  font-weight: 400;
+  opacity: 0.8;
+  display: block;
+  margin-top: 2px;
+}
+
+@keyframes fadeInBanner {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Spinner de Sincronização */
+.sync-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--color-primary-pale);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spinSync 0.8s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spinSync {
+  to { transform: rotate(360deg); }
+}
+
