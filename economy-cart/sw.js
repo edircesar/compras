@@ -1,4 +1,4 @@
-const CACHE_NAME = 'economia-inteligente-v1';
+const CACHE_NAME = 'economia-inteligente-v2';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -10,10 +10,12 @@ const STATIC_ASSETS = [
   './js/auth.js',
   './js/compra.js',
   './js/historico.js',
+  './js/estatisticas.js',
   './pages/login.html',
   './pages/nova-compra.html',
   './pages/compra.html',
   './pages/historico.html',
+  './pages/estatisticas.html',
   './icons/icon-192.png',
   './icons/icon-512.png',
   'https://cdn.jsdelivr.net/npm/idb@8/build/umd.js'

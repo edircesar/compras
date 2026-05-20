@@ -1,0 +1,153 @@
+<!-- Template: Painel de Estatísticas e Economia — Economy Cart -->
+<header class="app-header">
+  <div style="display: flex; align-items: center; gap: 8px;">
+    <!-- Ícone decorativo em formato de gráfico -->
+    <span style="font-size: 1.3rem;">📊</span>
+    <h1>Minhas Estatísticas</h1>
+  </div>
+  <div style="display: flex; align-items: center; gap: 8px;">
+    <!-- Botão de Exportação de Relatório PDF -->
+    <button class="logout-btn" id="btn-export-pdf" style="background-color: var(--color-primary-medium); border-color: transparent; color: white; display: flex; align-items: center; gap: 6px; font-weight: 600;">
+      <span>📄</span> Exportar PDF
+    </button>
+  </div>
+</header>
+
+<div class="container fade-in-page" style="padding-bottom: 90px;" id="estatisticas-relatorio-container">
+  
+  <!-- Banner Informativo -->
+  <div class="card" style="background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 100%); color: white; border: none; margin-bottom: 16px;">
+    <h2 style="color: white; margin-bottom: 4px; font-size: 1.25rem;">Inteligência de Economia</h2>
+    <p style="font-size: 0.8rem; opacity: 0.85; line-height: 1.4;">
+      Veja o histórico detalhado dos seus hábitos de compra, compare preços locais de produtos idênticos e descubra onde economizar mais.
+    </p>
+  </div>
+
+  <!-- SEÇÃO 1: MÉTRICAS GERAIS -->
+  <h3 style="font-size: 0.95rem; margin-bottom: 12px; color: var(--color-primary-dark); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Resumo Acumulado</h3>
+  
+  <div class="stats-grid">
+    <!-- Total Geral Gasto -->
+    <div class="stat-widget stat-widget-gradient">
+      <span class="stat-label">Total Gasto</span>
+      <span class="stat-value" id="stat-total-gasto">R$ 0,00</span>
+      <span class="stat-sub">Nas compras registradas</span>
+    </div>
+    
+    <!-- Gasto Médio -->
+    <div class="stat-widget">
+      <span class="stat-label">Gasto Médio</span>
+      <span class="stat-value" id="stat-gasto-medio" style="color: var(--color-primary);">R$ 0,00</span>
+      <span class="stat-sub">Por lista de compra</span>
+    </div>
+    
+    <!-- Total de Listas -->
+    <div class="stat-widget">
+      <span class="stat-label">Listas de Compras</span>
+      <span class="stat-value" id="stat-total-listas">0</span>
+      <span class="stat-sub">Listas criadas no total</span>
+    </div>
+
+    <!-- Total de Itens -->
+    <div class="stat-widget">
+      <span class="stat-label">Itens no Total</span>
+      <span class="stat-value" id="stat-total-itens">0</span>
+      <span class="stat-sub">Produtos acumulados</span>
+    </div>
+  </div>
+
+  <!-- SEÇÃO 2: MAIOR & MENOR LISTA -->
+  <div class="stats-grid">
+    <!-- Maior Compra -->
+    <div class="stat-widget stats-card-full" style="border-left: 5px solid var(--color-alert-danger);">
+      <span class="stat-label" style="color: var(--color-alert-danger);">Maior Compra Registrada</span>
+      <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+        <span class="stat-value" id="stat-maior-compra" style="color: var(--color-alert-danger);">R$ 0,00</span>
+        <span class="stat-sub" id="stat-maior-compra-meta" style="font-weight: 600; text-align: right;">Nenhuma registrada</span>
+      </div>
+    </div>
+
+    <!-- Menor Compra -->
+    <div class="stat-widget stats-card-full" style="border-left: 5px solid var(--color-primary-medium);">
+      <span class="stat-label" style="color: var(--color-primary-medium);">Menor Compra Registrada</span>
+      <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+        <span class="stat-value" id="stat-menor-compra" style="color: var(--color-primary-medium);">R$ 0,00</span>
+        <span class="stat-sub" id="stat-menor-compra-meta" style="font-weight: 600; text-align: right;">Nenhuma registrada</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEÇÃO 3: COMPARADOR DE PREÇO DO PRODUTO (CONSULTOR DE ECONOMIA) -->
+  <h3 style="font-size: 0.95rem; margin-top: 24px; margin-bottom: 12px; color: var(--color-primary-dark); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Consultor de Economia</h3>
+  
+  <div class="advisor-card">
+    <div class="product-select-container">
+      <label for="advisor-produto-select" style="font-size: 0.85rem; font-weight: 700; color: var(--color-primary-dark); display: block; margin-bottom: 6px;">Escolha um Produto para Comparar:</label>
+      <select id="advisor-produto-select" class="form-control" style="background-color: var(--color-bg-main); border: 1.5px solid var(--color-primary); color: var(--color-primary-dark); font-weight: 600;">
+        <option value="">Selecione um produto...</option>
+      </select>
+    </div>
+
+    <!-- Contêiner de Resultados do Comparador -->
+    <div id="advisor-resultados" style="display: none;">
+      <div class="advisor-result-grid">
+        <!-- Onde foi mais Barato -->
+        <div class="advisor-badge-box">
+          <span class="advisor-box-title">Menor Preço Encontrado</span>
+          <span class="advisor-box-price" id="advisor-preco-min" style="color: var(--color-primary);">R$ 0,00</span>
+          <span class="advisor-box-meta" id="advisor-meta-min">Local e data</span>
+        </div>
+
+        <!-- Onde foi mais Caro -->
+        <div class="advisor-badge-box expensive">
+          <span class="advisor-box-title" style="color: var(--color-alert-danger);">Maior Preço Encontrado</span>
+          <span class="advisor-box-price" id="advisor-preco-max" style="color: var(--color-alert-danger);">R$ 0,00</span>
+          <span class="advisor-box-meta" id="advisor-meta-max">Local e data</span>
+        </div>
+
+        <!-- Oportunidade de Economia -->
+        <div class="advisor-badge-box saving" id="advisor-box-saving">
+          <span class="advisor-box-title" style="color: #c79100;">Potencial de Economia</span>
+          <span class="advisor-box-price" id="advisor-economia-valor" style="color: #b57a00;">R$ 0,00 de diferença</span>
+          <span class="advisor-box-meta" id="advisor-economia-percentual">0% mais barato no local de menor preço</span>
+        </div>
+      </div>
+
+      <!-- Gráfico do Histórico do Produto -->
+      <div style="margin-top: 20px; border-top: 1px solid var(--color-border); padding-top: 16px;">
+        <h4 style="font-size: 0.85rem; font-weight: 700; color: var(--color-primary-dark); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Evolução de Preço do Produto</h4>
+        <div class="chart-container" style="height: 180px;">
+          <canvas id="chart-produto-preco"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mensagem se nenhum produto for selecionado -->
+    <div id="advisor-vazio" style="text-align: center; padding: 20px 10px; color: var(--color-text-muted);">
+      <p style="font-size: 1.8rem; margin-bottom: 6px;">💡</p>
+      <p style="font-size: 0.85rem; font-weight: 500;">Selecione um produto acima para analisar o histórico de variação de preços entre mercados e datas.</p>
+    </div>
+  </div>
+
+  <!-- SEÇÃO 4: GRÁFICOS COMPORTAMENTAIS -->
+  <h3 style="font-size: 0.95rem; margin-top: 24px; margin-bottom: 12px; color: var(--color-primary-dark); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Gráficos de Comportamento</h3>
+
+  <!-- Histórico de Gastos no Tempo -->
+  <div class="chart-card">
+    <h4 style="font-size: 0.9rem; font-weight: 700; color: var(--color-primary-dark); margin-bottom: 4px;">📈 Evolução do Gasto Total</h4>
+    <p style="font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 8px;">Acompanhe o total gasto em cada uma das suas últimas compras chronologicamente.</p>
+    <div class="chart-container">
+      <canvas id="chart-gastos-tempo"></canvas>
+    </div>
+  </div>
+
+  <!-- Divisão de Gastos por Estabelecimento -->
+  <div class="chart-card">
+    <h4 style="font-size: 0.9rem; font-weight: 700; color: var(--color-primary-dark); margin-bottom: 4px;">🏪 Distribuição de Gastos por Local</h4>
+    <p style="font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 8px;">Compare o acumulado gasto em cada estabelecimento ou supermercado visitado.</p>
+    <div class="chart-container">
+      <canvas id="chart-gastos-local"></canvas>
+    </div>
+  </div>
+
+</div>

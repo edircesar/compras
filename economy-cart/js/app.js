@@ -78,10 +78,34 @@ const App = {
       case '#historico':
         templatePath = './pages/historico.html';
         break;
+      case '#estatisticas':
+        templatePath = './pages/estatisticas.html';
+        break;
       default:
         // Rota desconhecida vai para histórico
         window.location.hash = '#historico';
         return;
+    }
+
+    // --- GERENCIAMENTO DE VISIBILIDADE DO BOTTOM-NAV ---
+    const bottomNav = document.getElementById('bottom-nav');
+    if (bottomNav) {
+      if (authenticated && (route === '#historico' || route === '#estatisticas')) {
+        bottomNav.style.display = 'flex';
+        
+        // Atualiza estilo ativo
+        const navHistorico = document.getElementById('nav-historico');
+        const navEstatisticas = document.getElementById('nav-estatisticas');
+        if (navHistorico && navEstatisticas) {
+          navHistorico.classList.remove('active');
+          navEstatisticas.classList.remove('active');
+          
+          if (route === '#historico') navHistorico.classList.add('active');
+          if (route === '#estatisticas') navEstatisticas.classList.add('active');
+        }
+      } else {
+        bottomNav.style.display = 'none';
+      }
     }
 
     try {
@@ -139,6 +163,13 @@ const App = {
           initHistoricoScreen();
         } else {
           console.warn('initHistoricoScreen não definida.');
+        }
+        break;
+      case '#estatisticas':
+        if (typeof initEstatisticasScreen === 'function') {
+          initEstatisticasScreen();
+        } else {
+          console.warn('initEstatisticasScreen não definida.');
         }
         break;
     }
