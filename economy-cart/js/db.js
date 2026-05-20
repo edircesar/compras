@@ -2,7 +2,7 @@
 // economy-cart/js/db.js
 
 const DB_NAME = 'economia-inteligente-db';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 let dbPromise = null;
 
@@ -36,6 +36,11 @@ function getDB() {
         if (!db.objectStoreNames.contains('itens')) {
           const itemStore = db.createObjectStore('itens', { keyPath: 'id' });
           itemStore.createIndex('compra_master_id', 'compra_master_id');
+        }
+
+        // 4. Store para exclusões pendentes (tombstones de deleção)
+        if (!db.objectStoreNames.contains('exclusoes')) {
+          db.createObjectStore('exclusoes', { keyPath: 'id' });
         }
       }
     });
@@ -135,8 +140,8 @@ async function marcarSincronizado(compraId, idServidor) {
 async function excluirCompra(compraId) {
   const db = await getDB();
   
-  // Inicia transação combinada para deletar compra e itens
-  const tx = db.transaction(['compras', 'itens'], 'readwrite');
+  // Inicia transação combinada para deletar compra e itens, e gravar tombstone
+  const tx = db.transaction(['compras', 'itens', 'exclusoes'], 'readwrite');
   
   // 1. Exclui a compra master
   await tx.objectStore('compras').delete(compraId);
@@ -149,9 +154,32 @@ async function excluirCompra(compraId) {
   for (const item of itens) {
     await itemStore.delete(item.id);
   }
+
+  // 3. Grava o ID da compra na store 'exclusoes' para sincronização offline posterior
+  await tx.objectStore('exclusoes').put({ id: compraId });
   
   await tx.done;
-  console.log(`[IndexedDB] Compra ${compraId} e seus itens foram removidos.`);
+  console.log(`[IndexedDB] Compra ${compraId} e seus itens foram removidos localmente e marcados para exclusão.`);
+}
+
+// Helper para listar deleções pendentes offline
+async function obterExclusoesLocais() {
+  const db = await getDB();
+  try {
+    return await db.getAll('exclusoes');
+  } catch (e) {
+    console.warn('[IndexedDB] Erro ao obter exclusões (tabela inexistente):', e);
+    return [];
+  }
+}
+
+// Helper para remover deleção resolvida offline
+async function removerExclusaoLocal(compraId) {
+  const db = await getDB();
+  const tx = db.transaction('exclusoes', 'readwrite');
+  await tx.store.delete(compraId);
+  await tx.done;
+  console.log(`[IndexedDB] Exclusão offline do ID ${compraId} sincronizada e resolvida.`);
 }
 
 // ==========================================

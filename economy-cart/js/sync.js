@@ -60,6 +60,29 @@ const SyncManager = {
 
     try {
       // ----------------------------------------------------
+      // ETAPA 0: DELEÇÃO (SINCRONIZAR EXCLUSÕES PENDENTES)
+      // ----------------------------------------------------
+      const exclusoesLocais = await obterExclusoesLocais();
+      
+      if (exclusoesLocais.length > 0) {
+        console.log(`[Sync] Encontradas ${exclusoesLocais.length} deleções pendentes offline.`);
+        for (const exc of exclusoesLocais) {
+          try {
+            const responseDel = await fetch(`./api/compras.php?id_local=${exc.id}`, {
+              method: 'DELETE',
+              headers: Auth.getHeaders()
+            });
+
+            if (responseDel.ok) {
+              await removerExclusaoLocal(exc.id);
+            }
+          } catch (errDelete) {
+            console.error('[Sync] Falha ao sincronizar exclusão da compra:', exc.id, errDelete);
+          }
+        }
+      }
+
+      // ----------------------------------------------------
       // ETAPA 1: UPLOAD (ENVIAR COMPRAS PENDENTES LOCAIS)
       // ----------------------------------------------------
       const comprasPendentes = await obterComprasNaoSincronizadas(user.id);
@@ -150,7 +173,16 @@ const SyncManager = {
       const comprasServidor = await responseGet.json();
       let listasBaixadas = 0;
 
+      // Obtém exclusões restantes que falharam em sincronizar
+      const exclusoesRestantes = await obterExclusoesLocais();
+      const exclusoesIds = exclusoesRestantes.map(e => e.id);
+
       for (const compraServidor of comprasServidor) {
+        // Ignora compras que estão na fila de exclusão local (evita puxar o que acabou de ser deletado offline)
+        if (exclusoesIds.includes(compraServidor.id_local)) {
+          console.log(`[Sync] Ignorando download da compra deletada offline: ${compraServidor.local_compra}`);
+          continue;
+        }
         // Tenta encontrar a compra localmente pelo id_local (que é a chave primária no IndexedDB)
         const compraLocal = await obterCompra(compraServidor.id_local);
 

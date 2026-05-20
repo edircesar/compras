@@ -99,6 +99,43 @@ elseif ($method === 'POST') {
     }
 }
 
+// ROTA: DELETAR COMPRA MESTRE
+elseif ($method === 'DELETE') {
+    // ID local (UUID) enviado na query parameter (ex: api/compras.php?id_local=UUID)
+    $idLocal = trim($_GET['id_local'] ?? '');
+
+    if (empty($idLocal)) {
+        sendResponse(400, ['error' => true, 'message' => 'O campo id_local é obrigatório para exclusão.']);
+    }
+
+    try {
+        // Verifica se a compra existe e pertence ao usuário ativo
+        $stmtCheck = $pdo->prepare("SELECT id FROM compras_master WHERE id_local = ? AND usuario_id = ? LIMIT 1");
+        $stmtCheck->execute([$idLocal, $usuarioId]);
+        $compra = $stmtCheck->fetch();
+
+        if (!$compra) {
+            // Se já não existe no servidor, retorna sucesso (idempotência)
+            sendResponse(200, [
+                'error' => false,
+                'message' => 'Compra não encontrada no servidor ou já excluída.'
+            ]);
+        }
+
+        // Deleta a compra mestre (MySQL cuidará de deletar os itens na tabela compras_itens via ON DELETE CASCADE)
+        $stmtDelete = $pdo->prepare("DELETE FROM compras_master WHERE id = ?");
+        $stmtDelete->execute([$compra['id']]);
+
+        sendResponse(200, [
+            'error' => false,
+            'message' => 'Compra e seus itens associados foram excluídos do servidor com sucesso.'
+        ]);
+
+    } catch (PDOException $e) {
+        sendResponse(500, ['error' => true, 'message' => 'Erro ao excluir compra no servidor: ' . $e->getMessage()]);
+    }
+}
+
 // Métodos não suportados
 else {
     sendResponse(405, ['error' => true, 'message' => 'Método HTTP não permitido nesta rota.']);
