@@ -33,16 +33,25 @@ const SyncManager = {
 
   /**
    * Tenta sincronizar todas as compras locais pendentes com o MySQL remoto.
+   * @param {boolean} isManual - Define se a sincronização foi solicitada manualmente pelo usuário para exibir feedbacks adicionais.
    */
-  async syncPurchases() {
+  async syncPurchases(isManual = false) {
     // Evita múltiplas sincronizações simultâneas
     if (this.isSyncing) return;
+    
     if (!navigator.onLine) {
       console.log('[Sync] Cancelando sincronização: Dispositivo offline.');
+      if (isManual) {
+        showToast('Navegador offline. Não é possível sincronizar no momento.', 'error');
+      }
       return;
     }
+    
     if (!Auth.isAuthenticated()) {
       console.log('[Sync] Cancelando sincronização: Usuário não autenticado.');
+      if (isManual) {
+        showToast('Você precisa estar logado para sincronizar suas compras.', 'error');
+      }
       return;
     }
 
@@ -55,11 +64,15 @@ const SyncManager = {
       
       if (comprasPendentes.length === 0) {
         console.log('[Sync] Sem compras pendentes de sincronização.');
+        if (isManual) {
+          showToast('Tudo sob controle! Todas as suas compras já estão sincronizadas com o servidor.', 'success');
+        }
         this.isSyncing = false;
         return;
       }
 
       console.log(`[Sync] Encontradas ${comprasPendentes.length} compras para sincronizar.`);
+      let syncSucedidos = 0;
 
       for (const compra of comprasPendentes) {
         showToast(`Sincronizando compra: ${compra.local_compra}...`, 'info');
@@ -112,13 +125,18 @@ const SyncManager = {
 
         // Etapa C: Atualizar IndexedDB local marcando sincronizado = 1
         await marcarSincronizado(compra.id, idServidor);
+        syncSucedidos++;
         
         showToast(`Lista "${compra.local_compra}" salva na nuvem!`, 'success');
       }
 
       // Se a tela atual for o histórico, força uma recarga visual
       if (window.location.hash === '#historico' && typeof renderizarHistorico === 'function') {
-        renderizarHistorico();
+        await renderizarHistorico();
+      }
+
+      if (isManual && syncSucedidos > 0) {
+        showToast('Sincronização concluída com sucesso! Suas compras estão salvas na nuvem.', 'success');
       }
 
     } catch (error) {

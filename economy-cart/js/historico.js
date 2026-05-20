@@ -37,17 +37,12 @@ async function initHistoricoScreen() {
   const btnSync = document.getElementById('btn-manual-sync');
   if (btnSync) {
     btnSync.onclick = async () => {
-      if (!navigator.onLine) {
-        showToast('Navegador offline. Não é possível sincronizar no momento.', 'error');
-        return;
-      }
-      
       const originalText = btnSync.innerText;
       btnSync.disabled = true;
       btnSync.innerText = 'Sincronizando...';
       
       try {
-        await SyncManager.syncPurchases();
+        await SyncManager.syncPurchases(true);
         await renderizarHistorico();
       } catch (err) {
         console.error(err);
