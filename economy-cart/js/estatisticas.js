@@ -514,10 +514,16 @@ function exportarRelatorioPDF(nomeUsuario) {
 
   showToast('Preparando relatório PDF...', 'info');
 
+  // Salva a posição original de rolagem para restaurar depois
+  const originalScrollY = window.scrollY;
+  // Bugfix: html2canvas as vezes corta a tela se não estiver no topo
+  window.scrollTo(0, 0);
+
   // 1. Criar cabeçalho do relatório
   const headerDiv = document.createElement('div');
   headerDiv.id = 'temp-pdf-header';
-  headerDiv.style.cssText = 'background:linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 100%);color:white;padding:20px;margin-bottom:20px;border-radius:8px;';
+  // IMPORTANTE: Não usar var() dentro de gradientes aqui, pois o html2canvas (v0.10.1) quebra e gera página branca.
+  headerDiv.style.cssText = 'background:linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%);color:white;padding:20px;margin-bottom:20px;border-radius:8px;';
   
   const dataAtual = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   headerDiv.innerHTML = `
@@ -530,7 +536,7 @@ function exportarRelatorioPDF(nomeUsuario) {
     </div>
   `;
 
-  // 2. Esconder elementos interativos
+  // 2. Esconder elementos interativos e corrigir CSS que quebra o html2canvas
   const elementsToHide = [];
   const selectorsToHide = [
     '.product-select-container', 
@@ -549,6 +555,15 @@ function exportarRelatorioPDF(nomeUsuario) {
     });
   });
 
+  // Bugfix: var() dentro de linear-gradient no CSS quebra o html2canvas e gera PDF em branco!
+  // Precisamos aplicar hex estático inline nesses elementos temporariamente.
+  const gradientWidgets = container.querySelectorAll('.stat-widget-gradient');
+  const originalGradients = [];
+  gradientWidgets.forEach(widget => {
+    originalGradients.push({ element: widget, background: widget.style.background });
+    widget.style.background = 'linear-gradient(135deg, #2d6a4f 0%, #1b4332 100%)';
+  });
+
   // Insere o cabeçalho no início do container
   container.insertBefore(headerDiv, container.firstChild);
 
@@ -565,7 +580,8 @@ function exportarRelatorioPDF(nomeUsuario) {
       scale: 2,
       useCORS: true,
       logging: false,
-      backgroundColor: '#f4f7f5'
+      backgroundColor: '#f4f7f5',
+      scrollY: 0 // Força Y=0 no canvas para corrigir offset
     },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
     pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
@@ -593,6 +609,14 @@ function exportarRelatorioPDF(nomeUsuario) {
       elementsToHide.forEach(item => {
         item.element.style.display = item.originalDisplay;
       });
+
+      // Restaura fundos originais
+      originalGradients.forEach(item => {
+        item.element.style.background = item.background;
+      });
+
+      // Retorna para a posição de rolagem original
+      window.scrollTo(0, originalScrollY);
     });
 }
 
