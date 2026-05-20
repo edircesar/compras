@@ -175,7 +175,7 @@ function initLoginScreen() {
         showToast(`Bem-vindo de volta, ${res.user.nome}!`, 'success');
         window.location.hash = '#historico';
       } catch (error) {
-        showToast(error.message, 'error');
+        showToast(error.message || error, 'error');
       } finally {
         submitBtn.disabled = false;
         submitBtn.innerText = originalText;
@@ -200,7 +200,7 @@ function initLoginScreen() {
         showToast(`Conta criada! Bem-vindo, ${res.user.nome}!`, 'success');
         window.location.hash = '#historico';
       } catch (error) {
-        showToast(error.message, 'error');
+        showToast(error.message || error, 'error');
       } finally {
         submitBtn.disabled = false;
         submitBtn.innerText = originalText;

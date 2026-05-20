@@ -16,7 +16,7 @@ const STATIC_ASSETS = [
   './pages/historico.html',
   './icons/icon-192.png',
   './icons/icon-512.png',
-  'https://cdn.jsdelivr.net/npm/idb@8/build/umd/index-min.js'
+  'https://cdn.jsdelivr.net/npm/idb@8/build/umd.js'
 ];
 
 // Instalação do Service Worker - Cacheia recursos estáticos
