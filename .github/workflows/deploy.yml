@@ -1,0 +1,25 @@
+name: Deploy PWA to Hostinger
+
+on:
+  push:
+    branches:
+      - main # Dispara a publicação automatizada a cada push na branch principal
+
+jobs:
+  deploy:
+    name: FTP Deploy
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Sync FTP files to Hostinger
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}       # Configurar em Settings -> Secrets do GitHub
+          username: ${{ secrets.FTP_USERNAME }}   # Configurar em Settings -> Secrets do GitHub
+          password: ${{ secrets.FTP_PASSWORD }}   # Configurar em Settings -> Secrets do GitHub
+          local-dir: ./economy-cart/              # Pasta local a ser enviada
+          server-dir: /public_html/               # Pasta de destino na Hostinger (raíz do domínio)
+          state-name: .ftp-deploy-state.json      # Arquivo de estado para enviar apenas os modificados

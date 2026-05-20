@@ -1,0 +1,41 @@
+<!-- Template: Histórico de Compras — Economy Cart -->
+<header class="app-header">
+  <div style="display: flex; align-items: center; gap: 8px;">
+    <!-- Ícone decorativo em formato de sacola -->
+    <span style="font-size: 1.3rem;">🛍️</span>
+    <h1>Minhas Compras</h1>
+  </div>
+  <div style="display: flex; align-items: center; gap: 8px;">
+    <!-- Botão de Sincronização Manual -->
+    <button class="logout-btn" id="btn-manual-sync" style="background-color: var(--color-primary-medium); border-color: transparent; color: white;">
+      Sincronizar
+    </button>
+    <button class="logout-btn" onclick="Auth.logout()">Sair</button>
+  </div>
+</header>
+
+<div class="container fade-in-page" style="padding-bottom: 90px;">
+  
+  <!-- Resumo Geral do Usuário -->
+  <div class="card" style="background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%); color: white; border: none;">
+    <p style="font-size: 0.85rem; opacity: 0.9;" id="historico-saudacao">Olá!</p>
+    <h2 style="color: white; margin-bottom: 4px; font-size: 1.35rem;" id="historico-titulo-resumo">Carregando histórico...</h2>
+    <p style="font-size: 0.8rem; opacity: 0.8;">Gerencie suas listas de compras locais de forma 100% offline.</p>
+  </div>
+
+  <h3 style="font-size: 0.95rem; margin-bottom: 12px; color: var(--color-primary-dark); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Listas Recentes</h3>
+
+  <!-- Container onde as compras salvas no IndexedDB serão renderizadas -->
+  <div id="historico-compras-container">
+    <div style="text-align: center; padding: 40px 20px; color: var(--color-text-muted);">
+      <p style="font-size: 1.5rem; margin-bottom: 8px;">🔄</p>
+      <p>Carregando compras do seu dispositivo...</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- Botão Flutuante (FAB) para Iniciar uma Nova Compra -->
+<a href="#nova-compra" class="fab" title="Iniciar Nova Compra" style="text-decoration: none;">
+  +
+</a>

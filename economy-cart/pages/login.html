@@ -1,0 +1,60 @@
+<!-- Template: Login & Cadastro — Economia Inteligente -->
+<div class="login-bg fade-in-page">
+  <div class="login-card">
+    <div class="login-header">
+      <!-- Usando o ícone do PWA como logo -->
+      <img src="icons/icon-192.png" alt="Economia Inteligente Logo">
+      <h1>Economia Inteligente</h1>
+      <p style="color: var(--color-text-muted); font-size: 0.875rem; margin-top: 4px;">Controle de Gastos em Tempo Real</p>
+    </div>
+
+    <!-- FORMULÁRIO DE LOGIN -->
+    <form id="login-form">
+      <h2 style="text-align: center; margin-bottom: 16px; font-size: 1.2rem;">Entrar na Conta</h2>
+      
+      <div class="form-group">
+        <label for="login-email">E-mail</label>
+        <input type="email" id="login-email" class="form-control" placeholder="seuemail@exemplo.com" required autocomplete="email">
+      </div>
+
+      <div class="form-group">
+        <label for="login-senha">Senha</label>
+        <input type="password" id="login-senha" class="form-control" placeholder="Mínimo 6 caracteres" required autocomplete="current-password">
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="margin-top: 8px;">Entrar</button>
+
+      <p style="text-align: center; margin-top: 16px; font-size: 0.875rem;">
+        Não tem uma conta? 
+        <a href="#" id="toggle-to-register" style="color: var(--color-primary); font-weight: 600; text-decoration: none;">Cadastre-se</a>
+      </p>
+    </form>
+
+    <!-- FORMULÁRIO DE CADASTRO (Oculto por padrão via display: none no JS/CSS inline) -->
+    <form id="register-form" style="display: none;">
+      <h2 style="text-align: center; margin-bottom: 16px; font-size: 1.2rem;">Criar Nova Conta</h2>
+      
+      <div class="form-group">
+        <label for="register-nome">Nome Completo</label>
+        <input type="text" id="register-nome" class="form-control" placeholder="Como quer ser chamado?" required autocomplete="name">
+      </div>
+
+      <div class="form-group">
+        <label for="register-email">E-mail</label>
+        <input type="email" id="register-email" class="form-control" placeholder="seuemail@exemplo.com" required autocomplete="email">
+      </div>
+
+      <div class="form-group">
+        <label for="register-senha">Senha</label>
+        <input type="password" id="register-senha" class="form-control" placeholder="Mínimo 6 caracteres" required autocomplete="new-password">
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="margin-top: 8px;">Criar Conta e Entrar</button>
+
+      <p style="text-align: center; margin-top: 16px; font-size: 0.875rem;">
+        Já possui uma conta? 
+        <a href="#" id="toggle-to-login" style="color: var(--color-primary); font-weight: 600; text-decoration: none;">Entrar</a>
+      </p>
+    </form>
+  </div>
+</div>

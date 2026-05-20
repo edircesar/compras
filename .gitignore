@@ -1,0 +1,12 @@
+# Credenciais e arquivos de texto sensíveis
+dados do bd.txt
+*.txt
+
+# Arquivos de estado e cache do FTP Deploy
+.ftp-deploy-state.json
+
+# Arquivos do sistema operacional e editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

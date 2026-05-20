@@ -1,0 +1,73 @@
+<!-- Template: Nova Compra — Economy Cart -->
+<header class="app-header">
+  <div style="display: flex; align-items: center; gap: 12px;">
+    <a href="#historico" style="color: white; text-decoration: none; font-size: 1.5rem; line-height: 1; padding: 4px 8px;">&larr;</a>
+    <h1>Nova Compra</h1>
+  </div>
+  <button class="logout-btn" onclick="Auth.logout()">Sair</button>
+</header>
+
+<div class="container fade-in-page">
+  <div class="card" style="padding: 24px 16px;">
+    <h2 style="text-align: center; margin-bottom: 20px;">Onde você vai comprar?</h2>
+    
+    <form id="nova-compra-form">
+      
+      <!-- Campo: Local de Compra -->
+      <div class="form-group">
+        <label for="local-compra">Supermercado / Estabelecimento</label>
+        <input type="text" id="local-compra" class="form-control" placeholder="Ex: Supermercado Assaí, Padaria, etc." required>
+      </div>
+
+      <!-- Campo: Data da Compra -->
+      <div class="form-group">
+        <label for="data-compra">Data da Compra</label>
+        <input type="date" id="data-compra" class="form-control" required>
+      </div>
+
+      <!-- Campo: Chave/Toggle do Limite de Gastos -->
+      <div class="form-group" style="display: flex; align-items: center; justify-content: space-between; margin-top: 24px; margin-bottom: 16px;">
+        <div>
+          <label style="margin-bottom: 0;">Definir Limite de Gastos?</label>
+          <span style="font-size: 0.75rem; color: var(--color-text-muted);">Alerta visual ao atingir 90%</span>
+        </div>
+        <div style="position: relative; display: inline-block; width: 50px; height: 26px;">
+          <input type="checkbox" id="toggle-limite" style="opacity: 0; width: 0; height: 0;">
+          <label for="toggle-limite" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></label>
+        </div>
+      </div>
+
+      <!-- Campo Dinâmico: Valor Limite (Inicialmente oculto) -->
+      <div class="form-group" id="container-valor-limite" style="display: none; animation: slideIn 0.2s ease-out;">
+        <label for="valor-limite">Valor Limite (R$)</label>
+        <input type="number" id="valor-limite" class="form-control" step="0.01" min="0.01" placeholder="Ex: 150.00">
+      </div>
+
+      <!-- Botão Submeter -->
+      <button type="submit" class="btn btn-primary" style="margin-top: 24px;">Iniciar Compra</button>
+      
+    </form>
+  </div>
+</div>
+
+<!-- Script CSS local para o Toggle Switch Customizado -->
+<style>
+  #toggle-limite:checked + label {
+    background-color: var(--color-primary);
+  }
+  #toggle-limite + label:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+    box-shadow: var(--shadow-sm);
+  }
+  #toggle-limite:checked + label:before {
+    transform: translateX(24px);
+  }
+</style>

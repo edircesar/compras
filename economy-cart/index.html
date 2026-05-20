@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Economia Inteligente — Controle de Gastos Offline</title>
+  
+  <!-- Configurações PWA e Mobile-First -->
+  <meta name="theme-color" content="#1B4332">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="App mobile-first de lista de compras com controle de gastos em tempo real offline. PWA Economia Inteligente.">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="manifest" href="manifest.json">
+  
+  <!-- CSS Global -->
+  <link rel="stylesheet" href="css/app.css">
+  
+  <!-- Biblioteca IndexedDB idb (v8) via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd/index-min.js"></script>
+</head>
+<body>
+
+  <!-- Container de Mensagens Flutuantes (Toasts) -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Shell Dinâmico da SPA -->
+  <main id="app">
+    <!-- As páginas serão injetadas aqui pelo roteador js/app.js -->
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh;">
+      <h2 style="color: var(--color-primary);">Carregando Economia Inteligente...</h2>
+    </div>
+  </main>
+
+  <!-- Sistema de Toast Global -->
+  <script>
+    /**
+     * Exibe um Toast Notification não bloqueante na tela.
+     * @param {string} message Mensagem a ser exibida.
+     * @param {string} type Tipo do toast: 'success', 'error', 'info'.
+     */
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      toast.innerHTML = `
+        <span>${message}</span>
+        <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
+      `;
+      container.appendChild(toast);
+      
+      // Auto remover após 4 segundos
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-10px)';
+        toast.style.transition = 'opacity 0.3s, transform 0.3s';
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+  </script>
+
+  <!-- Camada de Scripts do SPA (Ordem de Dependências) -->
+  <script src="js/db.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/sync.js"></script>
+  <script src="js/compra.js"></script>
+  <script src="js/historico.js"></script>
+  <script src="js/app.js"></script>
+
+  <!-- Registro de Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then((reg) => {
+            console.log('[PWA] Service Worker registrado com sucesso! Escopo:', reg.scope);
+            
+            // Ativa Background Sync se suportado
+            if (typeof SyncManager !== 'undefined') {
+              SyncManager.registerBackgroundSync();
+            }
+          })
+          .catch((err) => {
+            console.error('[PWA] Falha ao registrar Service Worker:', err);
+          });
+      });
+    }
+  </script>
+</body>
+</html>

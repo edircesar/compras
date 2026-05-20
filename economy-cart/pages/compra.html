@@ -1,0 +1,125 @@
+<!-- Template: Tela Principal de Compra — Economy Cart -->
+<header class="app-header">
+  <div style="display: flex; align-items: center; gap: 12px; overflow: hidden; max-width: 70%;">
+    <a href="#historico" style="color: white; text-decoration: none; font-size: 1.5rem; line-height: 1; padding: 4px 8px;">&larr;</a>
+    <h1 id="compra-titulo-local" style="font-size: 1.15rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">Carregando...</h1>
+  </div>
+  <div style="display: flex; align-items: center; gap: 8px;">
+    <span id="compra-badge-status" class="badge">Offline</span>
+    <button class="logout-btn btn-sm" id="btn-voltar-historico">Fechar</button>
+  </div>
+</header>
+
+<div class="container fade-in-page" style="padding-bottom: 100px;"> <!-- Padding para não tampar com o footer fixo -->
+  
+  <!-- Formulário Compacto de Adição de Item -->
+  <div class="add-item-form">
+    <h3 style="font-size: 0.95rem; margin-bottom: 10px; color: var(--color-primary-dark); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Adicionar Item</h3>
+    <form id="add-item-form">
+      <div class="form-group" style="margin-bottom: 10px;">
+        <input type="text" id="item-produto" class="form-control" placeholder="Nome do Produto (Ex: Arroz Tio João)" required autocomplete="off">
+      </div>
+      
+      <div class="form-row">
+        <!-- Quantidade -->
+        <div class="form-group">
+          <input type="number" id="item-quantidade" class="form-control" value="1" min="0.001" step="any" placeholder="Qtd" required>
+        </div>
+        
+        <!-- Valor Unitário -->
+        <div class="form-group">
+          <input type="number" id="item-valor-unitario" class="form-control" step="0.01" min="0.01" placeholder="Valor Unitário (R$)" required>
+        </div>
+
+        <!-- Botão Adicionar -->
+        <div class="form-group" style="flex: 0 0 54px;">
+          <button type="submit" class="btn btn-primary" style="width: 54px; font-size: 1.5rem; border-radius: var(--radius-sm);">+</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Cabeçalho da Lista -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0 4px;">
+    <h3 style="font-size: 0.9rem; color: var(--color-text-muted); font-weight: 600;" id="compra-qtd-itens">Itens no carrinho (0)</h3>
+    <button id="btn-limpar-carrinho" style="background: none; border: none; color: var(--color-alert-danger); font-size: 0.8rem; font-weight: 600; cursor: pointer;">Limpar Tudo</button>
+  </div>
+
+  <!-- Lista de Itens Carregados via JavaScript -->
+  <div class="items-list" id="itens-container">
+    <!-- Exemplo de item (injetado via JS): -->
+    <!--
+    <div class="item-row">
+      <div class="item-info">
+        <div class="item-name">Leite Condensado</div>
+        <div class="item-qty-price">
+          <button class="qty-btn">-</button>
+          <span>2</span>
+          <button class="qty-btn">+</button>
+          x R$ 5,49
+        </div>
+      </div>
+      <div class="item-total">R$ 10,98</div>
+      <button class="delete-item-btn">&times;</button>
+    </div>
+    -->
+    <div style="text-align: center; padding: 40px 20px; color: var(--color-text-muted);">
+      <p style="font-size: 1.5rem; margin-bottom: 8px;">🛒</p>
+      <p>Seu carrinho está vazio.</p>
+      <p style="font-size: 0.8rem; margin-top: 4px;">Digite o nome do produto acima para começar.</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- Footer Fixo e Reativo do Orçamento -->
+<footer id="footer-budget" class="footer-budget bg-budget-safe">
+  <div class="budget-info">
+    <span class="budget-label" id="budget-label-status">Total no Carrinho</span>
+    <span class="budget-total" id="budget-total-acumulado">R$ 0,00</span>
+    <span class="budget-limit" id="budget-limite-maximo">Sem limite definido</span>
+  </div>
+  <button class="btn btn-finalizar" id="btn-finalizar-compra">Finalizar</button>
+</footer>
+
+<!-- Estilos complementares específicos da listagem rápida -->
+<style>
+  .qty-adjuster {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--color-bg-main);
+    border-radius: var(--radius-sm);
+    padding: 2px 4px;
+    margin-right: 8px;
+    border: 1px solid var(--color-border);
+  }
+  
+  .qty-adjuster-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    border: none;
+    background-color: #ffffff;
+    font-size: 1rem;
+    font-weight: bold;
+    color: var(--color-primary-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+  }
+  
+  .qty-adjuster-btn:active {
+    background-color: var(--color-primary-pale);
+  }
+
+  .qty-display {
+    font-size: 0.9rem;
+    font-weight: 700;
+    min-width: 24px;
+    text-align: center;
+    color: var(--color-text-main);
+  }
+</style>
