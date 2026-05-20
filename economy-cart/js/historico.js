@@ -17,6 +17,19 @@ async function initHistoricoScreen() {
     saudacaoLabel.innerText = `Olá, ${user.nome}!`;
   }
 
+  // Configura ouvinte para o sino de notificações
+  const btnSino = document.getElementById('btn-sino-historico');
+  if (btnSino) {
+    if (typeof NotificacoesManager !== 'undefined') {
+      NotificacoesManager.atualizarTodosOsSinos();
+    }
+    btnSino.onclick = () => {
+      if (typeof NotificacoesManager !== 'undefined') {
+        NotificacoesManager.dispararNotificacaoTeste();
+      }
+    };
+  }
+
   // 2. Renderiza a lista de compras históricas salvas
   await renderizarHistorico();
 

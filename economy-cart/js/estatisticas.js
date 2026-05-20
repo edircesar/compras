@@ -24,6 +24,19 @@ async function initEstatisticasScreen() {
     btnExportPdf.onclick = () => exportarRelatorioPDF(user.nome);
   }
 
+  // Configura ouvinte para o sino de notificações
+  const btnSino = document.getElementById('btn-sino-estatisticas');
+  if (btnSino) {
+    if (typeof NotificacoesManager !== 'undefined') {
+      NotificacoesManager.atualizarTodosOsSinos();
+    }
+    btnSino.onclick = () => {
+      if (typeof NotificacoesManager !== 'undefined') {
+        NotificacoesManager.dispararNotificacaoTeste();
+      }
+    };
+  }
+
   // 2. Processa dados e renderiza os painéis
   await carregarEProcessarEstatisticas(user.id);
 }

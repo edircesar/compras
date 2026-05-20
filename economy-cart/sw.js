@@ -1,4 +1,4 @@
-const CACHE_NAME = 'economia-inteligente-v2';
+const CACHE_NAME = 'economia-inteligente-v3';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -11,6 +11,7 @@ const STATIC_ASSETS = [
   './js/compra.js',
   './js/historico.js',
   './js/estatisticas.js',
+  './js/notificacoes.js',
   './pages/login.html',
   './pages/nova-compra.html',
   './pages/compra.html',
@@ -114,4 +115,31 @@ self.addEventListener('sync', (event) => {
       })
     );
   }
+});
+
+// Ouvir cliques nas notificações para abrir/focar o app e ir para a rota correta
+self.addEventListener('notificationclick', (event) => {
+  console.log('[Service Worker] Notificação clicada! Evento:', event);
+  
+  event.notification.close(); // Fecha o balão de notificação imediatamente
+
+  // Define a URL destino (se fornecida nos dados, senão abre a página inicial)
+  const targetUrl = event.notification.data ? event.notification.data.url : self.registration.scope;
+
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      // Se houver uma aba aberta, foca e redireciona ela para a URL destino
+      for (const client of clientList) {
+        if ('focus' in client) {
+          // Navega até a rota destino e coloca em foco
+          client.navigate(targetUrl);
+          return client.focus();
+        }
+      }
+      // Se não houver nenhuma janela aberta, abre uma nova
+      if (self.clients.openWindow) {
+        return self.clients.openWindow(targetUrl);
+      }
+    })
+  );
 });

@@ -14,6 +14,11 @@ const App = {
     // 1. Inicializa o estado de autenticação (busca do IndexedDB)
     await Auth.init();
 
+    // Inicializa lembrete diário inteligente de notificações (se suportado e autenticado)
+    if (typeof NotificacoesManager !== 'undefined' && Auth.isAuthenticated()) {
+      NotificacoesManager.verificarEEnviarLembreteDiario();
+    }
+
     // 2. Inicializa o gerenciador de sincronização (ouve online/offline)
     SyncManager.init();
 
