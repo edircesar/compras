@@ -92,6 +92,22 @@
   <!-- Registro de Service Worker -->
   <script>
     if ('serviceWorker' in navigator) {
+      // Variável para evitar múltiplos recarregamentos simultâneos
+      let refreshing = false;
+
+      // Escuta mudanças de controlador (indica que um novo Service Worker assumiu a página)
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+          refreshing = true;
+          if (typeof showToast === 'function') {
+            showToast('Nova versão instalada! Atualizando aplicativo...', 'info');
+          }
+          setTimeout(() => {
+            window.location.reload();
+          }, 1500);
+        }
+      });
+
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js')
           .then((reg) => {
@@ -101,6 +117,9 @@
             if (typeof SyncManager !== 'undefined') {
               SyncManager.registerBackgroundSync();
             }
+
+            // Opcional: força uma verificação de atualização no carregamento
+            reg.update();
           })
           .catch((err) => {
             console.error('[PWA] Falha ao registrar Service Worker:', err);
