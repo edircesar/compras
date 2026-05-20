@@ -1,4 +1,4 @@
-const CACHE_NAME = 'economia-inteligente-v3';
+const CACHE_NAME = 'economia-inteligente-v4';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -52,7 +52,7 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // Estratégia Network-First para chamadas da API
+  // 1. Estratégia Network-First para chamadas da API
   if (url.pathname.includes('/api/')) {
     event.respondWith(
       fetch(event.request)
@@ -71,17 +71,17 @@ self.addEventListener('fetch', (event) => {
           );
         })
     );
-  } else {
-    // Estratégia Cache-First para assets estáticos e CDNs externas
+  }
+  // 2. Estratégia Cache-First para CDNs externas (libs de terceiros, fontes)
+  else if (url.origin !== self.location.origin) {
     event.respondWith(
       caches.match(event.request).then((cachedResponse) => {
         if (cachedResponse) {
           return cachedResponse;
         }
 
-        // Se não estiver no cache, busca na rede e armazena dinamicamente
         return fetch(event.request).then((networkResponse) => {
-          if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+          if (!networkResponse || networkResponse.status !== 200) {
             return networkResponse;
           }
 
@@ -92,12 +92,38 @@ self.addEventListener('fetch', (event) => {
 
           return networkResponse;
         }).catch(() => {
-          // Fallback caso a rede falhe e o recurso não esteja em cache (por exemplo, outra página HTML)
-          if (event.request.mode === 'navigate') {
-            return caches.match('./index.html');
-          }
+          // Retorna falha caso a CDN externa falhe offline
+          return new Response('Recurso externo indisponível offline.', { status: 404 });
         });
       })
+    );
+  }
+  // 3. Estratégia Network-First para assets locais (HTML, JS, CSS do próprio app)
+  else {
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          // Se a rede estiver online e retornar sucesso, atualiza o cache e retorna
+          if (networkResponse && networkResponse.status === 200) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          // Se falhar (offline), tenta recuperar do cache local
+          return caches.match(event.request).then((cachedResponse) => {
+            if (cachedResponse) {
+              return cachedResponse;
+            }
+            // Se for uma navegação de página do SPA e falhar, cai no index.html
+            if (event.request.mode === 'navigate') {
+              return caches.match('./index.html');
+            }
+          });
+        })
     );
   }
 });
