@@ -497,78 +497,12 @@ function renderizarGraficoVariacaoPrecoProduto(ocorrencias) {
 // ==========================================
 
 /**
- * Converte todos os estilos computados de um elemento (e filhos) para estilos inline.
- * Isso garante que CSS custom properties (var()) sejam resolvidas para o html2canvas.
- */
-function inlineComputedStyles(element) {
-  const allElements = element.querySelectorAll('*');
-  const propsToInline = [
-    'color', 'backgroundColor', 'background', 'backgroundImage',
-    'borderColor', 'borderLeftColor', 'borderRightColor', 'borderTopColor', 'borderBottomColor',
-    'fontSize', 'fontWeight', 'fontFamily', 'lineHeight', 'letterSpacing',
-    'textTransform', 'textAlign', 'padding', 'margin', 'display',
-    'flexDirection', 'justifyContent', 'alignItems', 'gap',
-    'gridTemplateColumns', 'gridColumn',
-    'borderRadius', 'boxShadow', 'opacity', 'whiteSpace',
-    'overflow', 'textOverflow', 'width', 'maxWidth', 'minWidth',
-    'height', 'maxHeight', 'minHeight', 'position', 'flex',
-    'borderWidth', 'borderStyle', 'borderLeft'
-  ];
-
-  // Inline no próprio elemento raiz
-  const rootComputed = window.getComputedStyle(element);
-  propsToInline.forEach(prop => {
-    try {
-      element.style[prop] = rootComputed[prop];
-    } catch(e) { /* ignora propriedades protegidas */ }
-  });
-
-  // Inline em todos os filhos
-  allElements.forEach(el => {
-    const computed = window.getComputedStyle(el);
-    propsToInline.forEach(prop => {
-      try {
-        el.style[prop] = computed[prop];
-      } catch(e) { /* ignora */ }
-    });
-  });
-}
-
-/**
- * Converte elementos <canvas> do Chart.js em <img> estáticos dentro de um clone.
- * html2canvas não consegue capturar canvas renderizados pelo Chart.js diretamente.
- */
-function convertCanvasesToImages(clonedElement, originalElement) {
-  const originalCanvases = originalElement.querySelectorAll('canvas');
-  const clonedCanvases = clonedElement.querySelectorAll('canvas');
-
-  clonedCanvases.forEach((clonedCanvas, index) => {
-    const originalCanvas = originalCanvases[index];
-    if (originalCanvas) {
-      try {
-        const dataUrl = originalCanvas.toDataURL('image/png', 1.0);
-        const img = document.createElement('img');
-        img.src = dataUrl;
-        img.style.width = '100%';
-        img.style.height = 'auto';
-        img.style.maxHeight = clonedCanvas.parentElement.style.height || '200px';
-        img.style.objectFit = 'contain';
-        clonedCanvas.parentElement.replaceChild(img, clonedCanvas);
-      } catch (e) {
-        console.warn('[PDF] Não foi possível converter canvas #' + index, e);
-      }
-    }
-  });
-}
-
-/**
  * Captura e exporta a tela de estatísticas como um PDF limpo e profissional.
- * Cria um clone do DOM com estilos inline e gráficos convertidos para garantir
- * que o PDF contenha todo o conteúdo visível na tela.
+ * Modifica o DOM temporariamente para a captura e depois restaura.
  */
 function exportarRelatorioPDF(nomeUsuario) {
-  const element = document.getElementById('estatisticas-relatorio-container');
-  if (!element) {
+  const container = document.getElementById('estatisticas-relatorio-container');
+  if (!container) {
     showToast('Erro ao capturar painel para PDF.', 'error');
     return;
   }
@@ -580,70 +514,66 @@ function exportarRelatorioPDF(nomeUsuario) {
 
   showToast('Preparando relatório PDF...', 'info');
 
-  // 1. Cria um wrapper temporário para o PDF
-  const pdfWrapper = document.createElement('div');
-  pdfWrapper.style.cssText = 'position:absolute;left:-9999px;top:0;width:460px;background:#f4f7f5;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:#212529;line-height:1.5;';
-
-  // 2. Adiciona cabeçalho do relatório
-  const header = document.createElement('div');
-  header.style.cssText = 'background:linear-gradient(135deg,#1b4332 0%,#2d6a4f 100%);color:#ffffff;padding:20px 16px;margin-bottom:8px;border-radius:0;';
+  // 1. Criar cabeçalho do relatório
+  const headerDiv = document.createElement('div');
+  headerDiv.id = 'temp-pdf-header';
+  headerDiv.style.cssText = 'background:linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 100%);color:white;padding:20px;margin-bottom:20px;border-radius:8px;';
+  
   const dataAtual = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-  header.innerHTML = `
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-      <span style="font-size:1.5rem;">📊</span>
-      <span style="font-size:1.25rem;font-weight:700;color:#ffffff;">Relatório de Estatísticas</span>
-    </div>
-    <div style="font-size:0.8rem;opacity:0.85;color:#ffffff;">
-      <span>Usuário: <strong>${nomeUsuario}</strong></span><br>
-      <span>Gerado em: ${dataAtual}</span>
+  headerDiv.innerHTML = `
+    <h2 style="color:white; margin-bottom: 8px; font-size: 1.4rem;">
+      <span style="margin-right: 8px;">📊</span>Relatório de Estatísticas
+    </h2>
+    <div style="font-size: 0.9rem; opacity: 0.9;">
+      <p style="margin-bottom: 4px;">Usuário: <strong>${nomeUsuario}</strong></p>
+      <p>Gerado em: ${dataAtual}</p>
     </div>
   `;
-  pdfWrapper.appendChild(header);
 
-  // 3. Clona o conteúdo da tela de estatísticas
-  const clone = element.cloneNode(true);
-  clone.style.padding = '16px';
-  clone.style.paddingBottom = '24px';
-  clone.style.background = '#f4f7f5';
+  // 2. Esconder elementos interativos
+  const elementsToHide = [];
+  const selectorsToHide = [
+    '.product-select-container', 
+    '#advisor-vazio',
+    '#btn-export-pdf',
+    '#btn-sino-estatisticas'
+  ];
 
-  // 4. Remove elementos interativos que não fazem sentido no PDF
-  const selectContainers = clone.querySelectorAll('.product-select-container');
-  selectContainers.forEach(el => el.remove());
-  const advisorVazio = clone.querySelector('#advisor-vazio');
-  if (advisorVazio) advisorVazio.remove();
-  // Remove o botão de export e sino que poderiam estar lá dentro
-  const btnsRemove = clone.querySelectorAll('#btn-export-pdf, #btn-sino-estatisticas');
-  btnsRemove.forEach(el => el.remove());
+  selectorsToHide.forEach(selector => {
+    const els = document.querySelectorAll(selector);
+    els.forEach(el => {
+      if (el.style.display !== 'none') {
+        elementsToHide.push({ element: el, originalDisplay: el.style.display });
+        el.style.display = 'none';
+      }
+    });
+  });
 
-  // 5. Converte canvases do Chart.js em imagens estáticas ANTES de aplicar estilos
-  convertCanvasesToImages(clone, element);
+  // Insere o cabeçalho no início do container
+  container.insertBefore(headerDiv, container.firstChild);
 
-  // 6. Inline todos os estilos computados para resolver CSS custom properties
-  // Precisamos anexar o clone temporariamente ao body para computar estilos
-  document.body.appendChild(pdfWrapper);
-  pdfWrapper.appendChild(clone);
-  inlineComputedStyles(pdfWrapper);
+  // Ajusta cor de fundo do container temporariamente para o PDF
+  const originalBackground = container.style.background;
+  container.style.background = '#f4f7f5';
 
-  // 7. Configura as opções do html2pdf
+  // 3. Opções do PDF
   const opt = {
-    margin: [8, 8, 8, 8],
-    filename: `Relatorio-Economia-Inteligente-${nomeUsuario.replace(/\s+/g, '-')}.pdf`,
-    image: { type: 'jpeg', quality: 0.95 },
+    margin: [10, 10, 10, 10],
+    filename: `Relatorio-Economia-Inteligente-${nomeUsuario.replace(/\\s+/g, '-')}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
     html2canvas: {
       scale: 2,
       useCORS: true,
       logging: false,
-      backgroundColor: '#f4f7f5',
-      windowWidth: 460,
-      allowTaint: true
+      backgroundColor: '#f4f7f5'
     },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
     pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
   };
 
-  // 8. Gera o PDF a partir do wrapper clonado
+  // 4. Gera o PDF
   html2pdf()
-    .from(pdfWrapper)
+    .from(container)
     .set(opt)
     .save()
     .then(() => {
@@ -654,10 +584,15 @@ function exportarRelatorioPDF(nomeUsuario) {
       showToast('Falha ao exportar PDF.', 'error');
     })
     .finally(() => {
-      // Remove o wrapper temporário do DOM
-      if (pdfWrapper.parentNode) {
-        pdfWrapper.parentNode.removeChild(pdfWrapper);
+      // 5. Restaura o DOM ao estado original
+      if (headerDiv.parentNode) {
+        headerDiv.parentNode.removeChild(headerDiv);
       }
+      container.style.background = originalBackground;
+      
+      elementsToHide.forEach(item => {
+        item.element.style.display = item.originalDisplay;
+      });
     });
 }
 
