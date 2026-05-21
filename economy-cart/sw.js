@@ -17,8 +17,8 @@ const STATIC_ASSETS = [
   './pages/compra.html',
   './pages/historico.html',
   './pages/estatisticas.html',
-  './icons/icon-192.jpg',
-  './icons/icon-512.jpg',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
   'https://cdn.jsdelivr.net/npm/idb@8/build/umd.js'
 ];
 
