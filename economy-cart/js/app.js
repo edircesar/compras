@@ -86,6 +86,9 @@ const App = {
       case '#estatisticas':
         templatePath = './pages/estatisticas.html';
         break;
+      case '#sobre':
+        templatePath = './pages/sobre.html';
+        break;
       default:
         // Rota desconhecida vai para histórico
         window.location.hash = '#historico';
@@ -95,18 +98,21 @@ const App = {
     // --- GERENCIAMENTO DE VISIBILIDADE DO BOTTOM-NAV ---
     const bottomNav = document.getElementById('bottom-nav');
     if (bottomNav) {
-      if (authenticated && (route === '#historico' || route === '#estatisticas')) {
+      if (authenticated && (route === '#historico' || route === '#estatisticas' || route === '#sobre')) {
         bottomNav.style.display = 'flex';
         
         // Atualiza estilo ativo
         const navHistorico = document.getElementById('nav-historico');
         const navEstatisticas = document.getElementById('nav-estatisticas');
-        if (navHistorico && navEstatisticas) {
+        const navSobre = document.getElementById('nav-sobre');
+        if (navHistorico && navEstatisticas && navSobre) {
           navHistorico.classList.remove('active');
           navEstatisticas.classList.remove('active');
+          navSobre.classList.remove('active');
           
           if (route === '#historico') navHistorico.classList.add('active');
           if (route === '#estatisticas') navEstatisticas.classList.add('active');
+          if (route === '#sobre') navSobre.classList.add('active');
         }
       } else {
         bottomNav.style.display = 'none';
@@ -176,6 +182,9 @@ const App = {
         } else {
           console.warn('initEstatisticasScreen não definida.');
         }
+        break;
+      case '#sobre':
+        // Nenhuma inicialização específica necessária para a página Sobre Nós
         break;
     }
   }
