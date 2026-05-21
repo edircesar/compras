@@ -10,3 +10,6 @@ dados do bd.txt
 Thumbs.db
 .vscode/
 .idea/
+
+# Arquivos descompactados do usuário
+pastainterna/
