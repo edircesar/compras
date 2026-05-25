@@ -13,3 +13,8 @@ Thumbs.db
 
 # Arquivos descompactados do usuário
 pastainterna/
+
+# Arquivos e prints locais
+Screenshot.png
+tela*.png
+pagina/
