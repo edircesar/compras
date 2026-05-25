@@ -27,6 +27,26 @@
     </p>
   </div>
 
+  <!-- SEÇÃO DE FILTROS -->
+  <div id="secao-filtros" class="card" style="margin-bottom: 24px; border: 1px solid var(--color-border); padding: 16px;">
+    <h3 style="font-size: 0.95rem; margin-bottom: 12px; color: var(--color-primary-dark); font-weight: 700;">Filtro de Período</h3>
+    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+      <div style="flex: 1; min-width: 130px;">
+        <label for="filtro-data-inicio" style="font-size: 0.75rem; color: var(--color-text-muted); display: block; margin-bottom: 4px;">Data Inicial</label>
+        <input type="date" id="filtro-data-inicio" class="form-control" style="width: 100%;" />
+      </div>
+      <div style="flex: 1; min-width: 130px;">
+        <label for="filtro-data-fim" style="font-size: 0.75rem; color: var(--color-text-muted); display: block; margin-bottom: 4px;">Data Final</label>
+        <input type="date" id="filtro-data-fim" class="form-control" style="width: 100%;" />
+      </div>
+    </div>
+    <div style="display: flex; gap: 12px; margin-top: 12px;">
+      <button id="btn-aplicar-filtro" class="btn" style="flex: 1; padding: 10px; background-color: var(--color-primary); color: white; border: none; font-weight: 600;">Aplicar</button>
+      <button id="btn-limpar-filtro" class="btn" style="flex: 1; padding: 10px; background: transparent; color: var(--color-text-main); border: 1px solid var(--color-border); font-weight: 600;">Limpar</button>
+    </div>
+  </div>
+
+  <div id="estatisticas-conteudo">
   <!-- SEÇÃO 1: MÉTRICAS GERAIS -->
   <h3 style="font-size: 0.95rem; margin-bottom: 12px; color: var(--color-primary-dark); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Resumo Acumulado</h3>
   
@@ -154,4 +174,6 @@
     </div>
   </div>
 
+  </div> <!-- Fim de estatisticas-conteudo -->
+  <div id="estatisticas-vazio" style="display: none;"></div>
 </div>

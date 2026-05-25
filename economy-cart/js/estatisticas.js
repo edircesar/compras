@@ -37,23 +37,65 @@ async function initEstatisticasScreen() {
     };
   }
 
-  // 2. Processa dados e renderiza os painéis
+  // 2. Configura botões de filtro
+  const btnAplicarFiltro = document.getElementById('btn-aplicar-filtro');
+  const btnLimparFiltro = document.getElementById('btn-limpar-filtro');
+  const inputDataInicio = document.getElementById('filtro-data-inicio');
+  const inputDataFim = document.getElementById('filtro-data-fim');
+
+  if (btnAplicarFiltro && btnLimparFiltro) {
+    btnAplicarFiltro.onclick = async () => {
+      const dataInicio = inputDataInicio.value;
+      const dataFim = inputDataFim.value;
+      await carregarEProcessarEstatisticas(user.id, dataInicio, dataFim);
+    };
+
+    btnLimparFiltro.onclick = async () => {
+      inputDataInicio.value = '';
+      inputDataFim.value = '';
+      await carregarEProcessarEstatisticas(user.id);
+    };
+  }
+
+  // 3. Processa dados e renderiza os painéis
   await carregarEProcessarEstatisticas(user.id);
 }
 
 /**
  * Carrega compras e itens do IndexedDB, realiza análises agregadas e renderiza a tela.
  */
-async function carregarEProcessarEstatisticas(usuarioId) {
+async function carregarEProcessarEstatisticas(usuarioId, dataInicio = null, dataFim = null) {
   try {
     // 1. Busca todas as compras locais ordenadas
-    const compras = await listarCompras(usuarioId);
+    let compras = await listarCompras(usuarioId);
+
+    // Aplica filtro de data se existir
+    if (dataInicio || dataFim) {
+      compras = compras.filter(compra => {
+        if (!compra.data_compra) return false;
+        let isValid = true;
+        if (dataInicio) {
+          isValid = isValid && compra.data_compra >= dataInicio;
+        }
+        if (dataFim) {
+          isValid = isValid && compra.data_compra <= dataFim;
+        }
+        return isValid;
+      });
+    }
     
-    // Se não houver compras cadastradas
+    const conteudoStats = document.getElementById('estatisticas-conteudo');
+    const vazioStats = document.getElementById('estatisticas-vazio');
+
+    // Se não houver compras cadastradas (ou filtradas)
     if (compras.length === 0) {
-      renderizarTelaSemDados();
+      const hasFilter = dataInicio || dataFim;
+      renderizarTelaSemDados(hasFilter);
       return;
     }
+
+    if (conteudoStats) conteudoStats.style.display = 'block';
+    if (vazioStats) vazioStats.style.display = 'none';
 
     // 2. Busca de forma assíncrona todos os itens de cada compra
     const allItems = [];
@@ -139,21 +181,39 @@ async function carregarEProcessarEstatisticas(usuarioId) {
 }
 
 /**
- * Caso o usuário não tenha nenhuma compra registrada localmente.
+ * Caso o usuário não tenha nenhuma compra registrada localmente ou o filtro não retorne dados.
  */
-function renderizarTelaSemDados() {
-  const container = document.getElementById('estatisticas-relatorio-container');
-  if (container) {
-    container.innerHTML = `
-      <div style="text-align: center; padding: 60px 20px; color: var(--color-text-muted);">
-        <p style="font-size: 3rem; margin-bottom: 16px;">📈</p>
-        <h2 style="color: var(--color-primary-dark); margin-bottom: 8px;">Dados insuficientes</h2>
-        <p>Você precisa registrar pelo menos 1 lista de compras ativa com itens para gerar estatísticas econômicas.</p>
-        <p style="font-size: 0.85rem; margin-top: 8px; color: var(--color-text-muted);">
-          Toque na aba "Minhas Compras" e utilize o botão "+" para iniciar a sua primeira lista!
-        </p>
-      </div>
-    `;
+function renderizarTelaSemDados(hasFilter = false) {
+  const conteudoStats = document.getElementById('estatisticas-conteudo');
+  const vazioStats = document.getElementById('estatisticas-vazio');
+  
+  if (conteudoStats) conteudoStats.style.display = 'none';
+  
+  if (vazioStats) {
+    vazioStats.style.display = 'block';
+    if (hasFilter) {
+      vazioStats.innerHTML = `
+        <div style="text-align: center; padding: 60px 20px; color: var(--color-text-muted);">
+          <p style="font-size: 3rem; margin-bottom: 16px;">📅</p>
+          <h2 style="color: var(--color-primary-dark); margin-bottom: 8px;">Nenhuma compra no período</h2>
+          <p>Não encontramos registros de compras para as datas selecionadas.</p>
+          <p style="font-size: 0.85rem; margin-top: 8px; color: var(--color-text-muted);">
+            Tente ajustar o filtro ou limpar as datas para ver o histórico completo.
+          </p>
+        </div>
+      `;
+    } else {
+      vazioStats.innerHTML = `
+        <div style="text-align: center; padding: 60px 20px; color: var(--color-text-muted);">
+          <p style="font-size: 3rem; margin-bottom: 16px;">📈</p>
+          <h2 style="color: var(--color-primary-dark); margin-bottom: 8px;">Dados insuficientes</h2>
+          <p>Você precisa registrar pelo menos 1 lista de compras ativa com itens para gerar estatísticas econômicas.</p>
+          <p style="font-size: 0.85rem; margin-top: 8px; color: var(--color-text-muted);">
+            Toque na aba "Minhas Compras" e utilize o botão "+" para iniciar a sua primeira lista!
+          </p>
+        </div>
+      `;
+    }
   }
 }
 
@@ -542,7 +602,8 @@ function exportarRelatorioPDF(nomeUsuario) {
     '.product-select-container', 
     '#advisor-vazio',
     '#btn-export-pdf',
-    '#btn-sino-estatisticas'
+    '#btn-sino-estatisticas',
+    '#secao-filtros'
   ];
 
   selectorsToHide.forEach(selector => {
